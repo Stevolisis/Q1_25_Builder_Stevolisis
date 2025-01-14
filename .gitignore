@@ -1,11 +1,6 @@
-./Prereq_Rust_RiseIn_Turbine3/node_modules
-./PreReq_Steven_RiseIn/node_modules
-./Prereq_Rust_RiseIn_Turbine3/target
-Turbin3-wallet
-/dev-wallet.json
+*node_modules
+*node_modules
+*target
 
-./Prereq_Rust_RiseIn_Turbine3/dev-wallet.json
-./PreReq_Steven_RiseIn/dev-wallet.json
-
-./Prereq_Rust_RiseIn_Turbine3/Turbin3-wallet.json
-./PreReq_Steven_RiseIn/Turbin3-wallet.json
+*dev-wallet.json
+*Turbin3-wallet.json
