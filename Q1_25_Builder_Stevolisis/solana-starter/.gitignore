@@ -1,0 +1,6 @@
+*wallet.json
+node_modules
+target
+.DS_Store
+*dev-wallet.json
+*Turbine3-wallet.json
