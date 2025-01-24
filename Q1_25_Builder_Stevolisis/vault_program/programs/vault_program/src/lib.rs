@@ -17,6 +17,7 @@ pub mod vault_program {
 pub struct Initialize<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
+    
     #[account(
         init,
         payer = user,
@@ -25,12 +26,14 @@ pub struct Initialize<'info> {
         space = VaultState::INIT_SPACE,
     )]
     pub state: Account<'info, VaultState>,
+
     #[account(
         mut,
         seeds = [b'vault', state.key().as_ref()],
         bump,
     )]
     pub vault: SystemAccount<'info, VaultState>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -47,12 +50,14 @@ impl <'info> Initialize <'info> {
 pub struct Deposit<'info>{
     #[account(mut)]
     pub user: Signer<'info>,
+
     #[account(
         mut,
         seeds = [b'vault', state.key().as_ref()],
         bump = state.vault_bump,
     )]
     pub vault: SystemAccount<'info, VaultState>,
+    
     #[account(
         seeds = [b'state', user.key().as_ref()],
         bump = state.state_bump,

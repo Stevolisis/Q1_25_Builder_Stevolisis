@@ -17,20 +17,20 @@ umi.use(signerIdentity(signer));
         // Follow this JSON structure
         // https://docs.metaplex.com/programs/token-metadata/changelog/v1.0#json-structure
 
-        const image = 'https://arweave.net/9axAttH1fzaSeeBvCdEk74ZkkxXqA8xcxftJVwuVnrhC'
+        const image = 'https://devnet.irys.xyz/LjSkS8UXefjV6N89uBLLPATmDgB2E8mDDW8kSJVABVy'
         const metadata = {
-            name: "GRMIMAGE",
-            symbol: "GMG",
+            name: "GreenMamba",
+            symbol: "GRM",
             description: "This is SOL Blog",
             image: image,
             attributes: [
-                {trait_type: 'Type', value: 'Nigerian'}
+                {trait_type: 'Logo', value: 'GreenMamba Logo'}
             ],
             properties: {
                 files: [
                     {
                         type: "image/png",
-                        uri: "https://arweave.net/9axAttH1fzaSeeBvCdEk74ZkkxXqA8xcxftJVwuVnrhC"
+                        uri: image
                     },
                 ]
             },

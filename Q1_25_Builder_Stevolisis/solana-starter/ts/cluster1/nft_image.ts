@@ -10,7 +10,7 @@ const umi = createUmi('https://api.devnet.solana.com');
 let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(wallet));
 const signer = createSignerFromKeypair(umi, keypair);
 
-umi.use(irysUploader());
+umi.use(irysUploader({address:'https://devnet.irys.xyz'}));
 umi.use(signerIdentity(signer));
 
 (async () => {
@@ -19,8 +19,12 @@ umi.use(signerIdentity(signer));
         //2. Convert image to generic file.
         //3. Upload image
 
-        const image = createGenericFile(await readFile('/home/stevolisis/Q1_25_Builder_Stevolisis/Q1_25_Builder_Stevolisis/solana-starter/ts/cluster1/nft.png'),'Rug');
-        const [myUri] = await umi.uploader.upload([image]); 
+        const image = await readFile('./nft.png');
+        console.log("Image: ", image);
+        const file = createGenericFile(image,'GreenMamba', {
+            contentType: 'png'
+        });
+        const [myUri] = await umi.uploader.upload([file]); 
         console.log("Your image URI: ", myUri);
     }
     catch(error) {
