@@ -36,8 +36,9 @@ describe("vault_program", () => {
       vault: vaultPda,
       system_program: anchor.web3.SystemProgram.programId
     })
+    .signers([user])
     .rpc();
-    console.log("Your transaction signature1", tx);
+    console.log("Your transaction signature", tx);
     const stateAccount = await program.account.vaultState.fetch(statePda);
     assert.equal(stateAccount.vaultBump, vaultBump);
     assert.equal(stateAccount.stateBump, stateBump);
@@ -75,5 +76,69 @@ describe("vault_program", () => {
     console.log("FinalVault Balance", finalVaultBalance);
 
     assert.equal(finalVaultBalance, initialVaultBalance + depositAmount.toNumber());
+  });
+
+  it("Withdraw SOL from vault", async () => {
+    [statePda, stateBump] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("state"), user.publicKey.toBuffer()],
+      program.programId
+    );
+
+    [vaultPda, vaultBump] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("vault"), statePda.toBuffer()],
+      program.programId
+    );
+
+    const amountToWithdraw = new anchor.BN(500_000_000); //0.5 SOL
+    const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+    const initialUserBalance = await provider.connection.getBalance(user.publicKey);
+    console.log("initialUserBalance Balance2", initialUserBalance);
+
+    const tx = await program.methods
+    .withdraw(amountToWithdraw)
+    .accounts({
+      user: user.publicKey,
+      state: statePda,
+      vault: vaultPda,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .signers([user])
+    .rpc();
+    console.log("Your transaction signature2", tx);
+
+    const finalVaultBalance = await provider.connection.getBalance(vaultPda);
+    const finalUserBalance = await provider.connection.getBalance(user.publicKey);
+
+    console.log("FinalVault Balance", finalVaultBalance);
+
+    assert.isAbove(finalUserBalance, initialUserBalance);
+    assert.equal(finalVaultBalance, initialVaultBalance - amountToWithdraw.toNumber());
+
+  });
+
+  it("✅ Closes the vault and transfers funds", async () => {
+    const initialUserBalance = await provider.connection.getBalance(user.publicKey);
+    const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+    console.log("InitalUserBal:", initialUserBalance);
+
+    const tx = await program.methods
+      .close()
+      .accounts({
+        user: user.publicKey,
+        state: statePda,
+        vault: vaultPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([user])
+      .rpc();
+
+    console.log("✅ Close transaction:", tx);
+
+    const finalUserBalance = await provider.connection.getBalance(user.publicKey);
+    const finalVaultBalance = await provider.connection.getBalance(vaultPda);
+    console.log("finalUserBal:", finalUserBalance);
+
+    assert.isAbove(finalUserBalance, initialUserBalance + initialVaultBalance);
+    assert.equal(finalVaultBalance, 0);
   });
 });

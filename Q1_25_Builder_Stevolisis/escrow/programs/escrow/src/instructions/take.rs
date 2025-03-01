@@ -21,8 +21,8 @@ pub struct Take <'info> {
 
     #[account(mut)]
     pub maker: SystemAccount<'info>,
-    pub mint_a: TokenInterface<'info>,
-    pub mint_b: TokenInterface<'info>,
+    pub mint_a: InterfaceAccount<'info, Mint>,
+    pub mint_b: InterfaceAccount<'info, Mint>,
 
     #[account(
         init_if_needed,
@@ -71,7 +71,8 @@ pub struct Take <'info> {
 
 impl <'info> Take <'info> {
     pub fn transfer_to_maker(&mut self) -> Result<()> {
-        let receive = self.escrow.receive;
+        let recieve = self.escrow.recieve;
+        
         let cpi_program = self.token_program.to_account_info();
         let cpi_accounts = TransferChecked {
             from: self.taker_ata_b.to_account_info(),
@@ -80,9 +81,8 @@ impl <'info> Take <'info> {
             mint: self.mint_b.to_account_info()
         };
         let cpi_ctx: CpiContext<'_, '_, '_, '_, _> = CpiContext::new(cpi_program, cpi_accounts);
-        transfer_checked(cpi_ctx, receive, self.mint_b.decimals)?;
+        transfer_checked(cpi_ctx, recieve, self.mint_b.decimals)?;
 
-        let receive = self.escrow.receive;
         let cpi_accounts = TransferChecked {
             from: self.vault.to_account_info(),
             to: self.taker_ata_a.to_account_info(),
@@ -103,7 +103,7 @@ impl <'info> Take <'info> {
             cpi_accounts, 
             signer_seeds
         );
-        transfer_checked(cpi_ctx, receive, self.mint_a.decimals)?;
+        transfer_checked(cpi_ctx, recieve, self.mint_a.decimals)?;
 
         Ok(())
     }

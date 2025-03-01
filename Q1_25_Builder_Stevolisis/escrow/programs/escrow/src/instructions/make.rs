@@ -15,7 +15,7 @@ use crate::state::Escrow;
 
 #[derive(Accounts)]
 #[instruction(seed: u64)]
-pub struct Make<'info>(){
+pub struct Make<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
     pub mint_a: InterfaceAccount<'info, Mint>,
@@ -51,13 +51,13 @@ pub struct Make<'info>(){
 }
 
 impl <'info> Make <'info> {
-    pub fn init_escrow(&mut self, seed: u64, receive: u64, bumps: &MakeBumps) -> Result<()> {
+    pub fn init_escrow(&mut self, seed: u64, recieve: u64, bumps: &MakeBumps) -> Result<()> {
         self.escrow.set_inner(Escrow {
             seed,
             maker: self.maker.key(),
             mint_a: self.mint_a.key(),
             mint_b: self.mint_b.key(),
-            receive,
+            recieve,
             bump: bumps.escrow,
         });
         Ok(())
@@ -71,7 +71,7 @@ impl <'info> Make <'info> {
             authority: self.maker.to_account_info(),
             mint: self.mint_a.to_account_info()
         };
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts);
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
         transfer_checked(cpi_ctx, deposit, self.mint_a.decimals)?;
         Ok(())
     }

@@ -15,7 +15,7 @@ use crate::state::Escrow;
 
 #[derive(Accounts)]
 #[instruction(seed: u64)]
-pub struct Refund<'info>(){
+pub struct Refund<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
     pub mint_a: InterfaceAccount<'info, Mint>,
@@ -39,8 +39,7 @@ pub struct Refund<'info>(){
     pub escrow: Account<'info, Escrow>,
 
     #[account(
-        init,
-        payer = maker,
+        mut,
         associated_token::mint = mint_a,
         associated_token::authority = escrow,
     )]
@@ -60,7 +59,7 @@ impl <'info> Refund <'info> {
             authority: self.maker.to_account_info(),
             mint: self.mint_a.to_account_info()
         };
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts);
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
         transfer_checked(cpi_ctx, self.vault.amount, self.mint_a.decimals)?;
         Ok(())
     }
@@ -81,4 +80,4 @@ impl <'info> Refund <'info> {
         close_account(cpi_ctx)?;
         Ok(())
     }
-}o
+}
