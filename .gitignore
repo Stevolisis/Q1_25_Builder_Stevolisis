@@ -1,6 +1,7 @@
 *node_modules
 *node_modules
 *target
+*test-ledger
 
 *dev-wallet.json
 *Turbin3-wallet.json

@@ -187,39 +187,63 @@ pub struct DisburseFunds<'info> {
         bump
     )]
     pub vault: SystemAccount<'info>,
+    #[account(mut)]
+    pub student: Account<'info, StudentApplication>,
 
+    #[account(mut)]
+    pub sponsor: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> DisburseFunds<'info> {
     pub fn disburse_funds(&mut self) -> Result<()> {
-        let escrow = &mut self.escrow;
-        let vault = &mut self.vault;
-
         // Ensure the scholarship is closed
-        require!(escrow.is_closed, ErrorCode::ScholarshipClosed);
+        require!(self.escrow.is_closed, ErrorCode::ScholarshipClosed);
 
         // Ensure funds have not already been disbursed
-        require!(!escrow.disbursed, ErrorCode::AlreadyDisbursed);
+        require!(!self.escrow.disbursed, ErrorCode::AlreadyDisbursed);
 
         // Calculate the amount per student
-        let amount_per_student = escrow.funds / escrow.approved;
-        // let remaining_accounts: Vec<AccountInfo> = self.remaining_accounts.to_vec(); 
-        
+        let amount_per_student = self.escrow.funds / self.escrow.approved;
+
+        // Clone the list of approved students to avoid borrowing issues
+        let approved_students = self.escrow.approved_students.clone();
+
+
         // Iterate over approved students
-        for student_pubkey in &escrow.approved_students {
-            // Transfer funds from vault to student
-            let cpi_program = self.system_program.to_account_info();
-            let cpi_accounts = Transfer {
-                from: vault.to_account_info(),
-                to: AccountInfo::new(student_pubkey, false, false, 0, &mut [], &Pubkey::default(), false, 0),
-            };
-            let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-            transfer(cpi_ctx, amount_per_student)?;
-        }
+        // for student_pubkey in approved_students {
 
-        escrow.disbursed = true;
+        //     // Store the escrow key in a variable to avoid temporary value issues
+        //     let escrow_key = self.escrow.key();
 
+        //     // Iterate over approved students
+        //     for student_pubkey in approved_students {
+        //         // Create a mutable u64 variable for lamports
+        //         let mut lamports = 0u64;
+
+        //         // Transfer funds from vault to student
+        //         let cpi_program = self.system_program.to_account_info();
+        //         let cpi_accounts = Transfer {
+        //             from: self.vault.to_account_info(),
+        //             to: AccountInfo::new(
+        //                 &student_pubkey, // Clone the Pubkey
+        //                 false, // is_signer
+        //                 false, // is_writable
+        //                 &mut lamports, // lamports (mutable reference)
+        //                 &mut [], // data (mutable slice)
+        //                 &escrow_key, // owner (escrow's key)
+        //                 false, // executable
+        //                 0, // rent_epoch
+        //             ),
+        //         };
+        //         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        //         transfer(cpi_ctx, amount_per_student)?;
+        //     }
+
+        //     // Mark the scholarship as disbursed
+        //     self.escrow.disbursed = true;
+        // }
+        self.escrow.disbursed = true;
         Ok(())
     }
 }

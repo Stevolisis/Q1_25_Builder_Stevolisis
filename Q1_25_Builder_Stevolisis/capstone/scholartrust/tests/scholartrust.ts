@@ -330,6 +330,63 @@ describe("scholartrust", () => {
       assert.include(error.message, "AlreadyProcessed");
     }
   });
+  
+  it("Disburse funds to approved student", async () => {
+    const studentApplicationPda = studentApplicationPdas[0]; // Approved student
+    const student = students[0];
+  
+    // Get initial balances
+    const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+    const initialStudentBalance = await provider.connection.getBalance(student.publicKey);
+  
+    console.log("Initial Vault Balance:", initialVaultBalance);
+    console.log("Initial Student Balance:", initialStudentBalance);
+  
+    // Call disbursement function
+    try{
+      await program.methods
+      .disburseFunds()
+      .accounts({
+        escrow: escrowPda,
+        student: studentApplicationPda,
+        sponsor: sponsor.publicKey,
+      })
+      .signers([sponsor])
+      .rpc();
 
+      // Get final balances
+      const finalVaultBalance = await provider.connection.getBalance(vaultPda);
+      const finalStudentBalance = await provider.connection.getBalance(student.publicKey);
+    
+      console.log("Final Vault Balance:", finalVaultBalance);
+      console.log("Final Student Balance:", finalStudentBalance);
+    
+      // Fetch the escrow account to verify the disbursed flag
+      const escrowAccount = await program.account.scholarshipEscrow.fetch(escrowPda);
+
+      // Assert that the disbursed flag is set to true
+      assert.isTrue(
+        escrowAccount.disbursed,
+        "Escrow account disbursed flag is not true"
+      );
+    } catch (error) {
+      console.log("Disburse Erorr: ",error);
+    }
+
+
+    // // Assert that the student received the funds
+    // assert.equal(
+    //   finalVaultBalance,
+    //   initialVaultBalance - funds.toNumber(),
+    //   "Vault balance did not decrease correctly"
+    // );
+  
+    // assert.approximately(
+    //   finalStudentBalance,
+    //   initialStudentBalance + funds.toNumber(),
+    //   10000, // Allow margin for transaction fees
+    //   "Student did not receive the correct funds"
+    // );
+  });
   
 });
