@@ -72,10 +72,20 @@ impl <'info> Refund <'info> {
             authority: self.escrow.to_account_info(),
         };
 
+        let maker_key = self.maker.key();
+        let bump = &[self.escrow.bump];
+        let seeds = &[
+            b"escrow",
+            maker_key.as_ref(),
+            bump,
+        ];
+
+        let signer_seeds = &[&seeds[..]];
+
         let cpi_ctx = CpiContext::new_with_signer(
             self.token_program.to_account_info(),
             cpi_accounts,
-            &[&[b"escrow", self.maker.key().as_ref(), &[self.escrow.bump]]],
+            signer_seeds,
         );
         close_account(cpi_ctx)?;
         Ok(())

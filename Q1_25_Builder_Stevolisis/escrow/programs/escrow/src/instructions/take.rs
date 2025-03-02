@@ -90,12 +90,14 @@ impl <'info> Take <'info> {
             mint: self.mint_a.to_account_info()
         };
 
+        let maker_key = self.maker.key();
+        let seed_bytes = self.escrow.seed.to_le_bytes();
         let seeds = &[
-            b"escrow", // Corrected: Use double quotes
-            self.maker.key().as_ref(),
-            &self.escrow.seed.to_le_bytes()[..],
+            b"escrow",
+            maker_key.as_ref(),
+            &seed_bytes[..],
         ];
-
+        
         let signer_seeds = &[&seeds[..]];
 
         let cpi_ctx: CpiContext<'_, '_, '_, '_, _> = CpiContext::new_with_signer(
@@ -107,7 +109,6 @@ impl <'info> Take <'info> {
 
         Ok(())
     }
-
     pub fn close(&mut self) -> Result<()> {
         let cpi_program = self.token_program.to_account_info();
         let cpi_accounts = CloseAccount {
@@ -120,6 +121,35 @@ impl <'info> Take <'info> {
             self.token_program.to_account_info(),
             cpi_accounts,
             &[&[b"escrow", self.maker.key().as_ref(), &[self.escrow.bump]]],
+        );
+        close_account(cpi_ctx)?;
+        Ok(())
+    }
+    
+    pub fn close(&mut self) -> Result<()> {
+        let cpi_program = self.token_program.to_account_info();
+        let cpi_accounts = CloseAccount {
+            account: self.vault.to_account_info(),
+            destination: self.maker.to_account_info(), // Rent goes back to the maker
+            authority: self.escrow.to_account_info(),
+        };
+    
+        let maker_key = self.maker.key();
+        let bump = self.escrow.bump;
+        let bump_slice = &[bump]; // Store the bump in a variable
+    
+        let seeds = &[
+            b"escrow",
+            maker_key.as_ref(),
+            bump_slice,
+        ];
+    
+        let signer_seeds = &[&seeds[..]];
+    
+        let cpi_ctx = CpiContext::new_with_signer(
+            &cpi_program,
+            cpi_accounts,
+            signer_seeds,
         );
         close_account(cpi_ctx)?;
         Ok(())
