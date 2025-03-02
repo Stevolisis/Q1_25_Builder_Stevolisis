@@ -26,6 +26,11 @@ pub mod scholartrust {
         ctx.accounts.reject_student()?;
         Ok(())
     }
+
+    pub fn disburse_funds(ctx: Context<DisburseFunds>) -> Result<()> {
+        ctx.accounts.disburse_funds()?;
+        Ok(())
+    }
     
 }
 
@@ -63,6 +68,7 @@ impl <'info> CreateSholarship <'info> {
             disbursed: false,
             is_closed: false,
             creation_timestamp: Clock::get()?.unix_timestamp as u64,  
+            approved_students: Vec::new(),
         });
         
         let cpi_program = self.system_program.to_account_info();
@@ -144,6 +150,7 @@ impl <'info> ProcessStudentApplication <'info> {
 
         student.status = 1;
         escrow.approved += 1;
+        escrow.approved_students.push(student.student);
 
         if escrow.approved == escrow.application_limit {
             escrow.is_closed = true;
@@ -169,6 +176,55 @@ impl <'info> ProcessStudentApplication <'info> {
     }
 }
 
+#[derive(Accounts)]
+pub struct DisburseFunds<'info> {
+    #[account(mut)]
+    pub escrow: Account<'info, ScholarshipEscrow>,
+
+    #[account(
+        mut,
+        seeds = [b"vault", escrow.key().as_ref()],
+        bump
+    )]
+    pub vault: SystemAccount<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+impl<'info> DisburseFunds<'info> {
+    pub fn disburse_funds(&mut self) -> Result<()> {
+        let escrow = &mut self.escrow;
+        let vault = &mut self.vault;
+
+        // Ensure the scholarship is closed
+        require!(escrow.is_closed, ErrorCode::ScholarshipClosed);
+
+        // Ensure funds have not already been disbursed
+        require!(!escrow.disbursed, ErrorCode::AlreadyDisbursed);
+
+        // Calculate the amount per student
+        let amount_per_student = escrow.funds / escrow.approved;
+        // let remaining_accounts: Vec<AccountInfo> = self.remaining_accounts.to_vec(); 
+        
+        // Iterate over approved students
+        for student_pubkey in &escrow.approved_students {
+            // Transfer funds from vault to student
+            let cpi_program = self.system_program.to_account_info();
+            let cpi_accounts = Transfer {
+                from: vault.to_account_info(),
+                to: AccountInfo::new(student_pubkey, false, false, 0, &mut [], &Pubkey::default(), false, 0),
+            };
+            let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+            transfer(cpi_ctx, amount_per_student)?;
+        }
+
+        escrow.disbursed = true;
+
+        Ok(())
+    }
+}
+
+
 #[account]
 pub struct ScholarshipEscrow {
     pub sponsor: Pubkey,
@@ -179,10 +235,11 @@ pub struct ScholarshipEscrow {
     pub disbursed: bool,
     pub is_closed: bool,
     pub creation_timestamp: u64,
+    pub approved_students: Vec<Pubkey>,
 }
 
 impl ScholarshipEscrow {
-    pub const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 8 + 1 + 1 + 8;
+    pub const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 8 + 1 + 1 + 8 + 4 + (32 * 10);
 }
 
 #[account]
@@ -208,6 +265,9 @@ pub enum ErrorCode {
 
     #[msg("The scholarship is full.")]
     ScholarshipFull,
+
+    #[msg("Scholarship already disbursed.")]
+    AlreadyDisbursed,
 }
 // #[account]
 // pub struct InitializeBumps {

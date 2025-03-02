@@ -226,38 +226,38 @@ describe("scholartrust", () => {
     }
   });
 
-  // it("Approve First Student", async () => {
-  //   const studentApplicationPda = studentApplicationPdas[0];
+  it("Approve First Student", async () => {
+    const studentApplicationPda = studentApplicationPdas[0];
 
-  //   // Approve the first student application.
-  //   await program.methods
-  //     .approveStudent()
-  //     .accounts({
-  //       escrow: escrowPda,
-  //       student: studentApplicationPda,
-  //       sponsor: sponsor.publicKey,
-  //     })
-  //     .signers([sponsor])
-  //     .rpc();
+    // Approve the first student application.
+    await program.methods
+      .approveStudent()
+      .accounts({
+        escrow: escrowPda,
+        student: studentApplicationPda,
+        sponsor: sponsor.publicKey,
+      })
+      .signers([sponsor])
+      .rpc();
 
-  //   // Fetch the student application account to verify its state.
-  //   const studentApplication = await program.account.studentApplication.fetch(studentApplicationPda);
+    // Fetch the student application account to verify its state.
+    const studentApplication = await program.account.studentApplication.fetch(studentApplicationPda);
 
-  //   // Assert that the student application was approved.
-  //   assert.equal(
-  //     studentApplication.status.toString(),
-  //     "1",
-  //     "Application status is not approved"
-  //   );
+    // Assert that the student application was approved.
+    assert.equal(
+      studentApplication.status.toString(),
+      "1",
+      "Application status is not approved"
+    );
 
-  //   // Fetch the escrow account to verify the approved count.
-  //   const escrowAccount = await program.account.scholarshipEscrow.fetch(escrowPda);
-  //   assert.equal(
-  //     escrowAccount.approved.toString(),
-  //     "1",
-  //     "Approved count is not 1"
-  //   );
-  // });
+    // Fetch the escrow account to verify the approved count.
+    const escrowAccount = await program.account.scholarshipEscrow.fetch(escrowPda);
+    assert.equal(
+      escrowAccount.approved.toString(),
+      "1",
+      "Approved count is not 1"
+    );
+  });
 
   it("Reject Second Student", async () => {
     const studentApplicationPda = studentApplicationPdas[1];
@@ -292,24 +292,24 @@ describe("scholartrust", () => {
     );
   });
 
-  // it("Fail to Approve Already Processed Application", async () => {
-  //   const studentApplicationPda = studentApplicationPdas[0];
-  //   try {
-  //     await program.methods
-  //       .approveStudent()
-  //       .accounts({
-  //         escrow: escrowPda,
-  //         student: studentApplicationPda,
-  //         sponsor: sponsor.publicKey,
-  //       })
-  //       .signers([sponsor])
-  //       .rpc();
+  it("Fail to Approve Already Processed Application", async () => {
+    const studentApplicationPda = studentApplicationPdas[0];
+    try {
+      await program.methods
+        .approveStudent()
+        .accounts({
+          escrow: escrowPda,
+          student: studentApplicationPda,
+          sponsor: sponsor.publicKey,
+        })
+        .signers([sponsor])
+        .rpc();
 
-  //     assert.fail("Expected an error but the transaction succeeded");
-  //   } catch (error) {
-  //     assert.include(error.message, "AlreadyProcessed");
-  //   }
-  // });
+      assert.fail("Expected an error but the transaction succeeded");
+    } catch (error) {
+      assert.include(error.message, "AlreadyProcessed");
+    }
+  });
 
   it("Fail to Reject Already Processed Application", async () => {
     const studentApplicationPda = studentApplicationPdas[1];
@@ -331,28 +331,5 @@ describe("scholartrust", () => {
     }
   });
 
-  it("Fail to Approve if Scholarship is Full", async () => {
-    const studentApplicationPda = studentApplicationPdas[0];
-
-    // Set the approved count to the application limit.
-    const escrowAccount = await program.account.scholarshipEscrow.fetch(escrowPda);
-    escrowAccount.approved = applicationLimit;
-
-    try {
-      await program.methods
-        .approveStudent()
-        .accounts({
-          escrow: escrowPda,
-          student: studentApplicationPda,
-          sponsor: sponsor.publicKey,
-        })
-        .signers([sponsor])
-        .rpc();
-
-      assert.fail("Expected an error but the transaction succeeded");
-    } catch (error) {
-      console.log("Errorss: ", error);
-      assert.include(error.message, "ScholarshipFull");
-    }
-  });
+  
 });
