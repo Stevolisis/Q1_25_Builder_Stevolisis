@@ -18,6 +18,12 @@ GZve3eFCooBCSQNEZthY4Liv6EwuWVXgVp4f2o9zYMEB
 4ePYDejABh5avaYg4xztrTPKXKLBh4mh5HtSApiqSPMSEcxcMkRf4TXHXhS1AQ8gswuo4sgu2mqjiG7ysyU3twsj
 ```
 
+## 📂 My Turbine 3 Capstone
+
+```bash
+\Q1_25_Builder_Stevolisis\capstone\scholar_trust
+```
+
 ## 🗂️ Content/Folders
 - [capstone](/capstone/): Contain capstone project from anchor program, user stories, diagram etc.
 - [escrow](/escrow): Contains Anchor program for an Automated Market Maker Smart Contract
