@@ -1,12 +1,12 @@
 [package]
-name = "scholartrust"
+name = "scholar_trust"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "scholartrust"
+name = "scholar_trust"
 
 [features]
 default = []

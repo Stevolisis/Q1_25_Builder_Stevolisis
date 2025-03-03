@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-scholartrust = "6FNxriJHA11Per2YzEiGDMJ1iJsN64Khx3D3iE64U5SF"
+scholar_trust = "FYJFrLngewxAfirKLjDdetCtz8psbLJHWbdiBEXTfsxv"
 
 [registry]
 url = "https://api.apr.dev"

@@ -221,7 +221,7 @@ describe("scholartrust", () => {
 
       assert.fail("Expected an error but the transaction succeeded");
     } catch (error) {
-      console.log("Error: ", error);
+      // console.log("Error: ", error);
       assert.include(error.message, "ScholarshipClosed");
     }
   });
@@ -370,7 +370,7 @@ describe("scholartrust", () => {
         "Escrow account disbursed flag is not true"
       );
     } catch (error) {
-      console.log("Disburse Erorr: ",error);
+      // console.log("Disburse Erorr: ",error);
     }
 
 
