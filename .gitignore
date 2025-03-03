@@ -1,7 +1,7 @@
 *node_modules
 *node_modules
 *target
-*test-ledger
+test-ledger
 *scholartrust
 
 *dev-wallet.json
